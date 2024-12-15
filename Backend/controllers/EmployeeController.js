@@ -2,10 +2,48 @@ const { EmployeeModel } = require("../models/EmployeeModel"); // Adjust the path
 
 const getAllEmployeesController = async (req, res) => {
   try {
-    const employees = await EmployeeModel.find();
+    let { page, limit, search } = req.query;
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
+    const skip = (page - 1) * limit;
+    // page = (1 - 1) * 5 = 0 skipping
+    // page = (2 - 1) * 5 = 5 skipping
+    // page = (3 - 1) * 5 = 10 skipping
+    // page = (4 - 1) * 5 = 15 skipping
+    // page = (5 - 1) * 5 = 20 skipping
+
+    let searchCriteria = {};
+    if (search) {
+      searchCriteria = {
+        $or: [
+          { name: { $regex: search, $options: "i" } }, // case-insensitive search
+          { email: { $regex: search, $options: "i" } },
+          { position: { $regex: search, $options: "i" } },
+        ],
+      };
+    }
+
+    const totalEmployees = await EmployeeModel.countDocuments(searchCriteria);
+    const totalPages = Math.ceil(totalEmployees / limit);
+
+    const employees = await EmployeeModel.find(searchCriteria)
+      .skip(skip)
+      .limit(limit)
+      .sort({ updatedAt: -1 });
+
     res
       .status(200)
-      .json({ message: "All Employees..", success: true, data: employees });
+      .json({
+        message: "All Employees..",
+        success: true,
+        data: { employees: employees, pagination: {
+            totalEmployees,
+            currentPage: page,
+            totalPages,
+            pageSize:limit
+        } },
+      });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal Server Error", success: false });
