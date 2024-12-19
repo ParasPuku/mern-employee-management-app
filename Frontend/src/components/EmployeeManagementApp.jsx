@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from "react";
 import EmployeeTable from "./EmployeeTable";
-import { getAllEmployees } from "../api";
+import { deleteEmployeeById, getAllEmployees } from "../api";
 import AddEmployee from "./AddEmployee";
 import { ToastContainer } from "react-toastify";
+import { notify } from "../utils/util";
 
 const EmployeeManagementApp = () => {
   const [showModal, setShowModal] = useState(false);
-  const [employeeData, setEmployeeData] = useState();
+  const [employeeData, setEmployeeData] = useState({
+    "employees": [],
+    "pagination": {
+      "totalEmployees": 0,
+      "currentPage": 1,
+      "totalPages": 1,
+      "pageSizes": 5
+    }
+  });
+  const [updateEmployeeObject, setUpdateEmployeeObject] = useState(null);
   useEffect(() => {
     console.log("Employeeeeeeee", employeeData);
   }, [employeeData]);
@@ -26,6 +36,29 @@ const EmployeeManagementApp = () => {
     setShowModal(true);
   };
 
+  const handleUpdateEmployee = (currentEmployee) => {
+    console.log("currentEmployee", currentEmployee);
+    setUpdateEmployeeObject(currentEmployee);
+    setShowModal(true);
+  };
+
+  const handleDeleteEmployee = async (employee) => {
+    try {
+      const {success, message} = await deleteEmployeeById(employee?._id);
+      if (success) {
+        notify(message, "success");
+        fetchEmployees();
+      } else {
+        notify(message, "error");
+      }
+    } catch (error) {
+      console.log("Error", error);
+    }
+  };
+  const handleSearchEmployee = (e) => {
+    const term = e.target.value
+    fetchEmployees(term);
+  }
   return (
     <div className="d-flex flex-column justify-content-center align-items-center w-100 p-3">
       <h1>Employee Management App</h1>
@@ -36,12 +69,13 @@ const EmployeeManagementApp = () => {
               className="btn btn-primary"
               onClick={() => handleAddEmployee()}
             >
-              Add
+              Add Employee
             </button>
             <input
               type="text"
               placeholder="Search Employee..."
               className="form-control w-50"
+              onChange={handleSearchEmployee}
             />
           </div>
           {employeeData &&
@@ -52,12 +86,15 @@ const EmployeeManagementApp = () => {
                 employees={employeeData?.data?.employees || []}
                 pagination={employeeData?.data?.pagination || {}}
                 fetchEmployees={fetchEmployees}
+                handleUpdateEmployee={handleUpdateEmployee}
+                handleDeleteEmployee={handleDeleteEmployee}
               />
             )}
           <AddEmployee
             showModal={showModal}
             setShowModal={setShowModal}
             fetchEmployees={fetchEmployees}
+            updateEmployeeObject={updateEmployeeObject}
           />
         </div>
       </div>

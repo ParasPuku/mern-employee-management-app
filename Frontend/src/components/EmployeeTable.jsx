@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const EmployeeTable = ({ employees, pagination, fetchEmployees }) => {
+const EmployeeTable = ({ employees, pagination, fetchEmployees, handleUpdateEmployee, handleDeleteEmployee }) => {
   console.log("EMPLOYEES TABLE", employees);
 
-  const headers = ["Name", "Email", "Phone", "Department", "Actions"];
+  const headers = ["Name", "Email", "Phone", "Salary","Department", "Actions"];
   const { currentPage = 1, totalPages = 1 } = pagination || {};
 
   const TableRow = ({ employee }) => {
@@ -14,28 +14,29 @@ const EmployeeTable = ({ employees, pagination, fetchEmployees }) => {
         <td>
           <Link
             to={`/employee/${employee._id}`}
-            className="text-decoration-none"
+            className="text-decoration-none text-capitalize"
           >
             {employee.name}
           </Link>
         </td>
         <td>{employee.email}</td>
         <td>{employee.phone}</td>
-        <td>{employee.department}</td>
-        <td>
+        <td>{employee.salary}</td>
+        <td className="text-capitalize">{employee.department}</td>
+        <td className="d-flex alin-items-center gap-3">
           <i
             className="bi bi-pencil-fill text-warning md-4"
             role="button"
             data-bs-toggle="tooltip"
             data-bs-placement="top"
-            onClick={() => console.log(`Editing employee ${employee._id}`)}
+            onClick={() => handleUpdateEmployee(employee)}
           ></i>
           <i
             className="bi bi-trash-fill text-danger md-4"
             role="button"
             data-bs-toggle="tooltip"
             data-bs-placement="top"
-            onClick={() => console.log(`Deleting employee ${employee._id}`)}
+            onClick={() => handleDeleteEmployee(employee)}
           ></i>
         </td>
       </tr>
@@ -84,7 +85,7 @@ const EmployeeTable = ({ employees, pagination, fetchEmployees }) => {
         </tbody>
       </table>
       <div className="d-flex justify-content-between align-items-center my-3">
-        <span className="badge bg-primary">
+        <span className="badge bg-primary p-2 m-2">
           Page {currentPage} of {totalPages}
         </span>
         <div>

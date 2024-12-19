@@ -1,8 +1,14 @@
-import React, { useState } from "react";
-import { createEmployee } from "../api";
+import React, { useEffect, useState } from "react";
+import { createEmployee, updateEmployeeById } from "../api";
 import { notify } from "../utils/util";
 
-const AddEmployee = ({ showModal, setShowModal, fetchEmployees }) => {
+const AddEmployee = ({
+  showModal,
+  setShowModal,
+  fetchEmployees,
+  updateEmployeeObject,
+}) => {
+  const [updateMode, setUpdateMode] = useState(false);
   const [employee, setEmployee] = useState({
     name: "",
     email: "",
@@ -11,6 +17,13 @@ const AddEmployee = ({ showModal, setShowModal, fetchEmployees }) => {
     salary: "",
     profileImage: null,
   });
+
+  useEffect(() => {
+    if (updateEmployeeObject) {
+      setUpdateMode(true);
+      setEmployee(updateEmployeeObject);
+    }
+  }, [updateEmployeeObject]);
 
   const resetEmployeeStates = () => {
     setEmployee({
@@ -37,7 +50,9 @@ const AddEmployee = ({ showModal, setShowModal, fetchEmployees }) => {
     e.preventDefault();
     console.log("EMP", employee);
     try {
-      const { success, message } = await createEmployee(employee);
+      const { success, message } = updateMode
+        ? await updateEmployeeById(employee, employee._id)
+        : await createEmployee(employee);
       console.log("SUCCESS, MESSAGE", success, message);
       if (success) {
         notify(message, "success");
@@ -61,7 +76,9 @@ const AddEmployee = ({ showModal, setShowModal, fetchEmployees }) => {
       <div className="modal-dialog" role="document">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">Add Employee</h5>
+            <h5 className="modal-title">
+              {updateMode ? "Update Employee" : "Add Employee"}
+            </h5>
             <button
               type="button"
               className="btn-close"
@@ -140,7 +157,6 @@ const AddEmployee = ({ showModal, setShowModal, fetchEmployees }) => {
                   type="file"
                   name="profileImage"
                   onChange={(e) => handleFileChange(e)}
-                  required
                 />
               </div>
               <div className="modal-footer">
@@ -152,7 +168,7 @@ const AddEmployee = ({ showModal, setShowModal, fetchEmployees }) => {
                   Close
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Save
+                  {updateMode ? "Update Profile" : "Save"}
                 </button>
               </div>
             </form>

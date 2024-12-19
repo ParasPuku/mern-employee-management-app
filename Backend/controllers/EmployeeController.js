@@ -18,7 +18,6 @@ const getAllEmployeesController = async (req, res) => {
         $or: [
           { name: { $regex: search, $options: "i" } }, // case-insensitive search
           { email: { $regex: search, $options: "i" } },
-          { position: { $regex: search, $options: "i" } },
         ],
       };
     }
@@ -110,6 +109,9 @@ const deleteEmployeeByIdController = async (req, res) => {
 };
 
 const updateEmployeeByIdController = async (req, res) => {
+  // console.log("Request", req)
+  // console.log("Request Params", req.params)
+  // console.log("req.body", req.body)
   const { id } = req.params;
   console.log("id", req.body);
   const { name, phone, email, department, salary } = req.body;
